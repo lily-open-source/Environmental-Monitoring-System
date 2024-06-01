@@ -1,4 +1,4 @@
-# IoT Environmental Monitoring System with Blynk and RS-485 Communication
+# Environmental Monitoring System
 
 ## Overview
 This project involves developing an IoT-based environmental monitoring system using the ESP32 microcontroller, SHT31 sensor, MQ-137 ammonia sensor, and a MAX485 module for RS-485 communication. The data collected from the sensors is displayed on an I2C LCD and can be sent to the Blynk app for remote monitoring. The system also calculates the heat index and categorizes it into different levels.

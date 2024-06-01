@@ -1,7 +1,7 @@
 # IoT Environmental Monitoring System with Blynk and RS-485 Communication
 
 ## Overview
-This project involves developing an IoT-based environmental monitoring system using the ESP32 microcontroller, SHT31 sensor, MQ-137 ammonia sensor, and a MAX485 module for RS-485 communication. The data collected from the sensors is displayed on an I2C LCD and sent to the Blynk app for remote monitoring. The system also calculates the heat index and categorizes it into different levels.
+This project involves developing an IoT-based environmental monitoring system using the ESP32 microcontroller, SHT31 sensor, MQ-137 ammonia sensor, and a MAX485 module for RS-485 communication. The data collected from the sensors is displayed on an I2C LCD and can be sent to the Blynk app for remote monitoring. The system also calculates the heat index and categorizes it into different levels.
 
 ## Table of Contents
 1. [Project Structure](#project-structure)
@@ -15,15 +15,16 @@ This project involves developing an IoT-based environmental monitoring system us
 
 ## Project Structure
 The project is structured as follows:
-- `main.ino`: The main Arduino sketch that contains the entire code for the project.
+- `main_offline.ino`: The main Arduino sketch for the offline version.
+- `main_adafruit.ino`: The main Arduino sketch with Adafruit IO integration.
+- `main_blynk.ino`: The main Arduino sketch with Blynk integration.
 - `flowchart`: The flowchart illustrating the process flow of the project.
 
 ## Components
 - **ESP32 Microcontroller**: The main controller for the project.
 - **SHT31 Sensor**: For measuring temperature and humidity.
 - **MQ-137 Sensor**: For measuring ammonia concentration.
-- **MAX485 Module**: For RS-485 communication.
-- **I2C LCD (16x2)**: For displaying sensor data locally.
+- **I2C LCD (20x4)**: For displaying sensor data locally.
 - **Blynk App**: For remote monitoring of the sensor data.
 
 ## Code Structure
@@ -35,14 +36,11 @@ The main code is divided into the following sections:
 2. **Sensor Initialization**:
    - Initializes the SHT31 and MQ-137 sensors.
 
-3. **RS-485 Initialization**:
-   - Configures the pins and initializes the RS-485 communication.
-
-4. **Data Collection and Calculation**:
+3. **Data Collection and Calculation**:
    - Reads sensor data, calculates the heat index, and categorizes it.
 
-5. **Data Transmission and Display**:
-   - Sends the data to the Blynk app, displays it on the LCD, and transmits it over the RS-485 network.
+4. **Data Transmission and Display**:
+   - Depending on the version, sends the data to Adafruit IO or Blynk, displays it on the LCD, and transmits it over the RS-485 network.
 
 ## Heat Index Calculation
 The heat index (H.I.) is calculated using the following formula:
@@ -62,11 +60,10 @@ graph TD
     C --> D[Read Ammonia Level from MQ-137]
     D --> E[Calculate Heat Index]
     E --> F[Categorize Heat Index]
-    F --> G[Send Data to Blynk]
+    F --> G[Send Data to Blynk or Adafruit IO]
     G --> H[Display Data on LCD]
-    H --> I[Transmit Data over RS-485]
-    I --> J[Wait for Next Interval]
-    J --> C
+    H --> I[Wait for Next Interval]
+    I --> C
 ```
 
 ## Setup Instructions
@@ -80,11 +77,19 @@ graph TD
    - Connect the I2C LCD to the I2C pins of the ESP32.
 
 2. **Software Setup**:
-   - Install the Blynk library in the Arduino IDE.
-   - Install the Adafruit SHT31 library.
-   - Install any additional required libraries.
-   - Open the `main.ino` file in the Arduino IDE.
-   - Replace `"YourAuthToken"`, `"YourNetworkName"`, and `"YourPassword"` with your actual Blynk authentication token and Wi-Fi credentials.
+   - For the **offline version**:
+     - [readme](code/offline/readme.md)
+     - Open the `offline.ino` file in the Arduino IDE.
+   - For the **Adafruit IO version**:
+     - [readme](code/online/adafruit/readme.md)
+     - Install the Adafruit IO and related libraries in the Arduino IDE.
+     - Open the `adafruit.ino` file in the Arduino IDE.
+     - Replace `"YOUR_AIO_KEY"` and other placeholders with your actual Adafruit IO key and credentials.
+   - For the **Blynk version**:
+     - [readme](code/online/blynk/readme.md)
+     - Install the Blynk library in the Arduino IDE.
+     - Open the `blynk.ino` file in the Arduino IDE.
+     - Replace `"YOUR_BLYNK_AUTH_TOKEN"`, `"YOUR_SSID"`, and `"YOUR_PASSWORD"` with your actual Blynk authentication token and Wi-Fi credentials.
 
 3. **Uploading the Code**:
    - Connect the ESP32 to your computer via USB.
@@ -93,8 +98,9 @@ graph TD
 
 ## Usage
 - **Monitoring Data**:
-  - Open the Blynk app and add widgets to monitor temperature, humidity, ammonia levels, and heat index.
-  - The data will be displayed on the I2C LCD connected to the ESP32.
+  - For the **offline version**, data will be displayed on the I2C LCD.
+  - For the **Adafruit IO version**, data will be sent to the Adafruit IO dashboard for remote monitoring.
+  - For the **Blynk version**, data will be sent to the Blynk app for remote monitoring.
   - The data will also be transmitted over the RS-485 network.
 
 - **Interpreting the Heat Index**:
@@ -102,8 +108,8 @@ graph TD
 
 ## Future Enhancements
 - **Additional Sensors**: Integrate more sensors for comprehensive environmental monitoring.
-- **Alerts**: Set up alerts in the Blynk app for extreme heat index levels.
+- **Alerts**: Set up alerts in the Blynk app or Adafruit IO for extreme heat index levels.
 - **Data Logging**: Implement data logging to track environmental conditions over time.
 - **Web Dashboard**: Create a web dashboard for monitoring and controlling the system remotely.
 
-This README provides a comprehensive guide to understanding, setting up, and using the IoT Environmental Monitoring System with Blynk and RS-485 communication. For detailed code and further customization, refer to the `main.ino` file.
+This README provides a comprehensive guide to understanding, setting up, and using the IoT Environmental Monitoring System with Blynk and RS-485 communication. For detailed code and further customization, refer to the respective `main.ino` files for each version.

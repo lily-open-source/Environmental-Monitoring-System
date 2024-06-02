@@ -18,6 +18,10 @@ LiquidCrystal_I2C lcd(0x27, 20, 4);
 const char SSID[] = "your_SSID";
 const char PASS[] = "your_PASSWORD";
 
+// Arduino IoT Cloud credentials
+const char DEVICE_LOGIN_NAME[] = "your_device_login_name";
+const char DEVICE_KEY[] = "your_device_key";
+
 // Variables to be sent to the IoT cloud
 float temperature;
 float humidity;
@@ -120,8 +124,11 @@ void setup() {
   lcd.init();
   lcd.backlight();
 
-  // Setup WiFi connection
+  // Setup IoT Cloud connection
   ArduinoCloud.begin(SSID, PASS);
+
+  // Connect to the IoT Cloud using the provided credentials
+  ArduinoCloud.addDevice(DEVICE_LOGIN_NAME, DEVICE_KEY);
 
   // Define the properties in the cloud
   ArduinoCloud.addProperty(temperature, READ, 1 * SECONDS, NULL);

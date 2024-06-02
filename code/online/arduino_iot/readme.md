@@ -1,8 +1,8 @@
-# Sensor Data Display and IoT System
+# Sensor Data Display and IoT Monitoring System
 
 ## About
 
-This project is an advanced sensor data display and IoT system utilizing an Arduino, an MQ-137 ammonia sensor, an SHT31 temperature and humidity sensor, an LCD screen, and Arduino IoT Cloud capabilities. The system reads temperature, humidity, and ammonia levels, calculates the heat index, categorizes it, and displays the data on an LCD screen. Additionally, it sends the sensor data to the Arduino IoT Cloud for remote monitoring. This setup is useful for applications in agriculture, industrial safety, and indoor air quality monitoring.
+This project is a sensor data display and IoT monitoring system utilizing an Arduino, an MQ-137 ammonia sensor, an SHT31 temperature and humidity sensor, and an LCD screen. The system reads temperature, humidity, and ammonia levels, calculates the heat index, categorizes it, and displays the data on an LCD screen. Additionally, it sends the data to the Arduino IoT Cloud for remote monitoring. This system provides real-time environmental data monitoring, useful for applications in agriculture, industrial safety, and indoor air quality monitoring.
 
 ## Structure
 
@@ -19,11 +19,11 @@ The project structure includes:
    - `Adafruit_Sensor.h`: Base class for sensor libraries.
    - `Adafruit_SHT31.h`: For interfacing with the SHT31 sensor.
    - `LiquidCrystal_I2C.h`: For controlling the I2C LCD.
-   - `ArduinoIoTCloud.h`: For IoT cloud functionality.
-   - `Arduino_ConnectionHandler.h`: For handling WiFi connection to the IoT cloud.
+   - `ArduinoIoTCloud.h`: For IoT Cloud connectivity.
+   - `Arduino_ConnectionHandler.h`: For managing the connection to the IoT Cloud.
 
 3. **Code Files**:
-   - `main.ino`: Contains the setup and loop functions along with helper functions for reading sensors, calculating heat index, displaying data, and updating the IoT cloud.
+   - `main.ino`: Contains the setup and loop functions along with helper functions for reading sensors, calculating heat index, displaying data, and updating the IoT Cloud.
 
 ## Explanation
 
@@ -32,19 +32,19 @@ The project structure includes:
 - **SHT31 Sensor**: Initialized with the I2C address `0x44`. The sensor reads temperature and humidity.
 - **LCD**: Initialized with the I2C address `0x27` for a 20x4 character display.
 - **MQ-137 Sensor**: Connected to analog pin `34`, it measures ammonia concentration in ppm (parts per million).
-- **WiFi and IoT Cloud**: WiFi credentials are set up for connecting to the Arduino IoT Cloud, allowing remote monitoring of the sensor data.
+- **IoT Cloud**: Configured with WiFi credentials and device keys for connecting to the Arduino IoT Cloud.
 
 ### Functions
 
 1. **readMQ137()**: Reads the analog value from the MQ-137 sensor and converts it to ppm.
 2. **calculateHeatIndex(float temperature, float humidity)**: Uses a simplified formula to calculate the heat index based on temperature and humidity.
 3. **categorizeHeatIndex(float hi)**: Categorizes the heat index into "Normal", "Ideal", "Tolerable", or "Extreme".
-4. **displaySensorData()**: Reads data from the sensors, calculates the heat index, displays all the information on the LCD, and updates the IoT cloud.
+4. **displaySensorData()**: Reads data from the sensors, calculates the heat index, displays all the information on the LCD, and updates the IoT Cloud.
 
 ### Main Program Flow
 
-- **setup()**: Initializes serial communication, the SHT31 sensor, the LCD, and sets up the WiFi and IoT cloud connection. Defines cloud properties for remote monitoring.
-- **loop()**: Periodically (every second) reads sensor data, updates the LCD display, and sends data to the IoT cloud.
+- **setup()**: Initializes serial communication, the SHT31 sensor, the LCD, and the IoT Cloud connection. Sets up the initial conditions.
+- **loop()**: Periodically (every second) reads sensor data, updates the LCD display, and sends data to the IoT Cloud.
 
 ## Use Case
 
@@ -70,27 +70,28 @@ This system can be deployed in various scenarios requiring environmental monitor
 ### Expansion
 
 - **Additional Sensors**: Easily expandable to include more sensors (e.g., CO2, dust, other gas sensors).
-- **Data Logging**: Integrate with SD card modules or IoT platforms for data logging and remote monitoring.
+- **Data Logging**: Integrate with SD card modules or other IoT platforms for data logging and remote monitoring.
 
 ## Requirements
 
 - **Software**: Arduino IDE with the following libraries installed:
   - Adafruit SHT31 Library
   - LiquidCrystal I2C Library
-  - Arduino IoT Cloud Library
-  - Arduino Connection Handler Library
+  - ArduinoIoTCloud Library
+  - Arduino_ConnectionHandler Library
 - **Hardware**:
   - Arduino board
   - MQ-137 sensor
   - SHT31 sensor
   - LCD display (20x4 with I2C interface)
   - Connecting wires and breadboard
+  - Internet connection for IoT Cloud functionality
 
 ## Installation
 
 1. Connect the sensors and LCD to the Arduino as per the pin configuration in the code.
 2. Install the required libraries via the Arduino Library Manager.
-3. Set up your Arduino IoT Cloud account and configure your device.
+3. Set up your Thing on the Arduino IoT Cloud, get the `DEVICE_KEY` and `DEVICE_LOGIN_NAME`, and replace the placeholders in the code with your credentials.
 4. Upload the provided code to the Arduino using the Arduino IDE.
 5. Open the serial monitor to debug and verify sensor readings.
 6. Monitor your sensor data remotely via the Arduino IoT Cloud dashboard.

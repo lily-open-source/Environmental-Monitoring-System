@@ -60,7 +60,7 @@ graph TD
     C --> D[Read Ammonia Level from MQ-137]
     D --> E[Calculate Heat Index]
     E --> F[Categorize Heat Index]
-    F --> G[Send Data to Cloud iot provider (online ver only)]
+    F --> G[Send Data to Cloud iot provider for the online ver]
     G --> H[Display Data on LCD]
     H --> I[Wait for Next Interval]
     I --> C

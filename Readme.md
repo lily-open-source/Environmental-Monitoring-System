@@ -60,7 +60,7 @@ graph TD
     C --> D[Read Ammonia Level from MQ-137]
     D --> E[Calculate Heat Index]
     E --> F[Categorize Heat Index]
-    F --> G[Send Data to Blynk or Adafruit IO]
+    F --> G[Send Data to Cloud iot provider (online ver only)]
     G --> H[Display Data on LCD]
     H --> I[Wait for Next Interval]
     I --> C
@@ -85,6 +85,11 @@ graph TD
      - Install the Adafruit IO and related libraries in the Arduino IDE.
      - Open the `adafruit.ino` file in the Arduino IDE.
      - Replace `"YOUR_AIO_KEY"` and other placeholders with your actual Adafruit IO key and credentials.
+   - For the **Arduino IoT version**:
+     - [readme](code/online/arduino_iot/readme.md)
+     - Install the Blynk library in the Arduino IDE.
+     - Open the `arduino_iot.ino` file in the Arduino IDE.
+     - Replace `"your_SSID"`, `"your_PASSWORD"`, `"your_device_login_name"`, and `"your_device_key"` with your actual arduino iot cloud token (device name and key) and Wi-Fi credentials.
    - For the **Blynk version**:
      - [readme](code/online/blynk/readme.md)
      - Install the Blynk library in the Arduino IDE.

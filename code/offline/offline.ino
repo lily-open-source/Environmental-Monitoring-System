@@ -49,6 +49,11 @@ void displaySensorData() {
   // Check if any reads failed and exit early (to try again).
   if (isnan(temperature) || isnan(humidity)) {
     Serial.println("Failed to read from SHT20 sensor!");
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Failed to read");
+    lcd.setCursor(0, 1);
+    lcd.print("from SHT20 sensor");
     return;
   }
 
@@ -95,10 +100,10 @@ void displaySensorData() {
 
 void setup() {
   // Start serial communication
-  Serial.begin(115200);
+  Serial.begin(9600);
 
   // Initialize SHT20 sensor
-  if (!sht20.begin(0x44)) {   // Set to 0x45 for alternate i2c addr
+  if (!sht20.begin(0x40)) {   // Set to 0x45 for alternate i2c addr
     Serial.println("Couldn't find SHT20");
     while (1) delay(1);
   }

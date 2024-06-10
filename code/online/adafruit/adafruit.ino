@@ -14,10 +14,10 @@ SHT2x sht;
 LiquidCrystal_I2C lcd(0x27, 20, 4);
 
 // Adafruit IO configuration
-#define IO_USERNAME "YOUR_ADAFRUIT_IO_USERNAME"
-#define IO_KEY "YOUR_ADAFRUIT_IO_ACTIVE_KEY"
-#define WIFI_SSID "YOUR_WIFI_SSID"
-#define WIFI_PASS "YOUR_WIFI_PASSWORD"
+#define IO_USERNAME "your_aio_username"
+#define IO_KEY "your_aio_key"
+#define WIFI_SSID "your_ssid"
+#define WIFI_PASS "ssid_password"
 
 // Set up the Adafruit IO client
 AdafruitIO_WiFi io(IO_USERNAME, IO_KEY, WIFI_SSID, WIFI_PASS);
@@ -27,7 +27,6 @@ AdafruitIO_Feed *temperatureFeed = io.feed("temperature");
 AdafruitIO_Feed *humidityFeed = io.feed("humidity");
 AdafruitIO_Feed *ammoniaFeed = io.feed("ammonia");
 AdafruitIO_Feed *heatIndexFeed = io.feed("heat-index");
-AdafruitIO_Feed *heatIndexCategoryFeed = io.feed("heat-index-category");
 
 // Function to read MQ-137 sensor value
 float readMQ137() {
@@ -155,13 +154,6 @@ void displaySensorData() {
  lcd.print(heatIndex);
  lcd.print(" F ");
  lcd.print(hiCategory);
-
- // Send data to Adafruit IO
- temperatureFeed->save(temperature);
- humidityFeed->save(humidity);
- ammoniaFeed->save(ammonia);
- heatIndexFeed->save(heatIndex);
- heatIndexCategoryFeed->save(hiCategory);
 }
 
 void setup() {
@@ -193,6 +185,7 @@ void setup() {
 
 void loop() {
  static unsigned long lastDisplayTime = 0;
+ static unsigned long lastSendTime = 0;
  unsigned long currentMillis = millis();
 
  if (currentMillis - lastDisplayTime >= 1000) {
@@ -200,6 +193,15 @@ void loop() {
    lastDisplayTime = currentMillis;
  }
 
- // Keep Adafruit IO connected
- io.run();
+ // Send data to Adafruit IO every 30 seconds
+ if (currentMillis - lastSendTime >= 30000) {
+   temperatureFeed->save(sht.getTemperature());
+   humidityFeed->save(sht.getHumidity());
+   ammoniaFeed->save(readMQ137());
+   heatIndexFeed->save(calculateHeatIndex(sht.getTemperature(), sht.getHumidity()));
+   lastSendTime = currentMillis;
+  }
+
+  // Keep Adafruit IO connected
+  io.run();
 }

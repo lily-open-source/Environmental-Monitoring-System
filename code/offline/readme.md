@@ -11,7 +11,7 @@ The project structure includes:
 1. **Hardware Components**:
    - Arduino board
    - MQ-137 ammonia sensor
-   - SHT31 temperature and humidity sensor
+   - SHT2x temperature and humidity sensor
    - LCD screen (20x4) with I2C interface
 
 2. **Libraries**:

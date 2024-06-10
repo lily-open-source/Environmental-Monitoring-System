@@ -2,149 +2,189 @@
 #define BLYNK_TEMPLATE_NAME "YOUR_TEMPLATE_NAME"
 
 #include <Wire.h>
-#include <Adafruit_Sensor.h>
-#include <Adafruit_SHT31.h>
 #include <LiquidCrystal_I2C.h>
+#include "SHT2x.h"
 #include <BlynkSimpleEsp32.h>
-#include <WiFi.h>
-
-// Define Blynk authentication token
-char auth[] = "YOUR_BLYNK_AUTH_TOKEN";
-
-// Define WiFi credentials
-char ssid[] = "YOUR_SSID";
-char pass[] = "YOUR_PASSWORD";
 
 // Define the pin for MQ-137
 const int mq137Pin = 34;
 
 // Initialize SHT20 sensor
-Adafruit_SHT31 sht20 = Adafruit_SHT31();
+uint32_t start, stop;
+SHT2x sht;
 
 // Initialize the LCD, set the I2C address to 0x27 for a 20 chars and 4 line display
 LiquidCrystal_I2C lcd(0x27, 20, 4);
 
-// Create a BlynkTimer object
-BlynkTimer timer;
+// Blynk configuration
+char auth[] = "YOUR_BLYNK_AUTH_TOKEN";
+char ssid[] = "YOUR_WIFI_SSID";
+char pass[] = "YOUR_WIFI_PASSWORD";
+
+// Blynk Virtual Pins
+#define VPIN_TEMPERATURE V0
+#define VPIN_HUMIDITY V1
+#define VPIN_AMMONIA V2
+#define VPIN_HEAT_INDEX V3
+#define VPIN_HEAT_INDEX_CATEGORY V4
 
 // Function to read MQ-137 sensor value
 float readMQ137() {
-  int analogValue = analogRead(mq137Pin);
-  // Convert analog value to ppm (calibration needed)
-  float ppm = (analogValue / 4095.0) * 100; // Simplified conversion
-  return ppm;
+ int analogValue = analogRead(mq137Pin);
+ // Convert analog value to ppm (calibration needed)
+ float ppm = (analogValue / 4095.0) * 100; // Simplified conversion
+ return ppm;
 }
 
 // Function to calculate heat index
 float calculateHeatIndex(float temperature, float humidity) {
-  // Using the simplified formula for heat index calculation
-  float hi = ((1.8 * temperature) + humidity + 32) * 1.8;
-  return hi;
+ // Fahrenheit temperature and relative humidity
+ float tempF = (temperature * 1.8) + 32; // Convert Celsius to Fahrenheit
+ 
+ // Check if temperature is below 80°F or humidity is below 40%
+ if (tempF < 80.0 || humidity < 40.0) {
+   return tempF; // Heat index is the same as the temperature
+ }
+
+ // Use the NWS formula for heat index calculation
+ // NWS link : https://www.weather.gov/ama/heatindex
+ float hi = -42.379 +
+            2.04901523 * tempF +
+           10.14333127 * humidity +
+           -0.22475541 * tempF * humidity +
+           -0.00683783 * pow(tempF, 2) +
+           -0.05481717 * pow(humidity, 2) +
+            0.00122874 * pow(tempF, 2) * humidity +
+            0.00085282 * tempF * pow(humidity, 2) +
+           -0.00000199 * pow(tempF, 2) * pow(humidity, 2);
+
+ return hi;
 }
 
 // Function to categorize heat index
 String categorizeHeatIndex(float hi) {
-  if (hi >= 145 && hi <= 149) {
-    return "Normal";
-  } else if (hi >= 150 && hi <= 155) {
-    return "Ideal";
-  } else if (hi >= 156 && hi <= 160) {
-    return "Tolerable";
-  } else {
-    return "Extreme";
-  }
+ if (hi <= 80) {
+   return "A"; //"safe";
+ } else if (hi >= 80 && hi <= 90) {
+   return "B"; //"caution";
+ } else if (hi >= 90 && hi <= 103) {
+   return "C"; //"E caution";
+ } else if (hi >= 103 && hi <= 124) {
+   return "D"; //"danger";
+ } else if (hi >= 125){
+   return "E"; //"E danger";
+ }
 }
 
-// Function to display sensor data on LCD and send data to Blynk
+void sendDataToBlynk(float temperature, float humidity, float ammonia, float heatIndex, String hiCategory) {
+ Blynk.virtualWrite(VPIN_TEMPERATURE, temperature);
+ Blynk.virtualWrite(VPIN_HUMIDITY, humidity);
+ Blynk.virtualWrite(VPIN_AMMONIA, ammonia);
+ Blynk.virtualWrite(VPIN_HEAT_INDEX, heatIndex);
+ Blynk.virtualWrite(VPIN_HEAT_INDEX_CATEGORY, hiCategory);
+}
+
+// Function to display sensor data on LCD
 void displaySensorData() {
-  // Read SHT20 sensor
-  float temperature = sht20.readTemperature();
-  float humidity = sht20.readHumidity();
+ const uint32_t minI2CFreq = 100000;
+ const uint32_t maxI2CFreq = 600000;
+ const uint32_t freqStep = 50000;
 
-  // Check if any reads failed and exit early (to try again).
-  if (isnan(temperature) || isnan(humidity)) {
-    Serial.println("Failed to read from SHT20 sensor!");
-    return;
-  }
+ float temperature = NAN;
+ float humidity = NAN;
+ bool readSuccess = false;
 
-  // Read MQ-137 sensor
-  float ammonia = readMQ137();
+ // Try different I2C frequencies until a successful read
+ for (uint32_t i2cFreq = minI2CFreq; i2cFreq <= maxI2CFreq; i2cFreq += freqStep) {
+   Wire.setClock(i2cFreq);
+   unsigned long start = micros();
+   sht.read();
+   unsigned long stop = micros();
 
-  // Calculate Heat Index
-  float heatIndex = calculateHeatIndex(temperature, humidity);
-  String hiCategory = categorizeHeatIndex(heatIndex);
+   // Check if the read was successful
+   if (!isnan(sht.getTemperature()) && !isnan(sht.getHumidity())) {
+     temperature = sht.getTemperature();
+     humidity = sht.getHumidity();
+     readSuccess = true;
+     break;
+   }
 
-  // Print data to Serial Monitor for debugging
-  Serial.print("Temperature: ");
-  Serial.print(temperature);
-  Serial.print(" °C, Humidity: ");
-  Serial.print(humidity);
-  Serial.print(" %, Ammonia: ");
-  Serial.print(ammonia);
-  Serial.print(" ppm, Heat Index: ");
-  Serial.print(heatIndex);
-  Serial.print(" (");
-  Serial.print(hiCategory);
-  Serial.println(")");
+   Serial.print(i2cFreq / 1000);
+ }
 
-  // Display data on LCD
-  lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print("Temp: ");
-  lcd.print(temperature);
-  lcd.print(" C");
-  lcd.setCursor(0, 1);
-  lcd.print("Hum : ");
-  lcd.print(humidity);
-  lcd.print(" %");
-  lcd.setCursor(0, 2);
-  lcd.print("NH3 : ");
-  lcd.print(ammonia);
-  lcd.print(" ppm");
-  lcd.setCursor(0, 3);
-  lcd.print("HI  : ");
-  lcd.print(heatIndex);
-  lcd.print(" ");
-  lcd.print(hiCategory);
+ // If no successful read occurred, display an error message
+ if (!readSuccess) {
+   Serial.println("Failed to read from SHT sensor!");
+   lcd.clear();
+   lcd.setCursor(0, 0);
+   lcd.print("Failed to read");
+   lcd.setCursor(0, 1);
+   lcd.print("from SHT20 sensor");
+   return;
+ }
 
-  // Send data to Blynk
-  Blynk.virtualWrite(V0, temperature);  // Temperature
-  Blynk.virtualWrite(V1, humidity);     // Humidity
-  Blynk.virtualWrite(V2, ammonia);      // Ammonia
-  Blynk.virtualWrite(V3, heatIndex);    // Heat Index
-  Blynk.virtualWrite(V4, hiCategory);   // Heat Index Category
+ // Read MQ-137 sensor
+ float ammonia = readMQ137();
+
+ // Calculate Heat Index
+ float heatIndex = calculateHeatIndex(temperature, humidity);
+ String hiCategory = categorizeHeatIndex(heatIndex);
+
+ // Print data to Serial Monitor for debugging
+ Serial.print("Temperature: ");
+ Serial.print(temperature);
+ Serial.print(" °C, Humidity: ");
+ Serial.print(humidity);
+ Serial.print(" %, Ammonia: ");
+ Serial.print(ammonia);
+ Serial.print(" ppm, Heat Index: ");
+ Serial.print(heatIndex);
+ Serial.print(" (");
+ Serial.print(hiCategory);
+ Serial.println(")");
+
+ // Display data on LCD
+ lcd.clear();
+ lcd.setCursor(0, 0);
+ lcd.print("Temp: ");
+ lcd.print(temperature);
+ lcd.print(" C");
+ lcd.setCursor(0, 1);
+ lcd.print("Hum : ");
+ lcd.print(humidity);
+ lcd.print(" %");
+ lcd.setCursor(0, 2);
+ lcd.print("NH3 : ");
+ lcd.print(ammonia);
+ lcd.print(" ppm");
+ lcd.setCursor(0, 3);
+ lcd.print("HI  : ");
+ lcd.print(heatIndex);
+ lcd.print(" F");
+ lcd.print(hiCategory);
+
+ // Send data to Blynk
+ sendDataToBlynk(temperature, humidity, ammonia, heatIndex, hiCategory);
 }
 
 void setup() {
-  // Start serial communication
-  Serial.begin(115200);
+ // Start serial communication
+ Serial.begin(115200);
+ Wire.begin();
+ sht.begin();
 
-  // Initialize SHT20 sensor
-  if (!sht20.begin(0x44)) {   // Set to 0x45 for alternate i2c addr
-    Serial.println("Couldn't find SHT20");
-    while (1) delay(1);
-  }
+ // Initialize SHT20 sensor
+ uint8_t stat = sht.getStatus();
 
-  // Initialize LCD
-  lcd.init();
-  lcd.backlight();
+ // Initialize LCD
+ lcd.init();
+ lcd.backlight();
 
-  // Connect to WiFi
-  WiFi.begin(ssid, pass);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(1000);
-    Serial.print(".");
-  }
-  Serial.println("\nConnected to WiFi");
-
-  // Initialize Blynk
-  Blynk.begin(auth, ssid, pass);
-
-  // Setup a timer to display data every second
-  timer.setInterval(1000L, displaySensorData); // 1 second interval
+ // Connect to Blynk
+ Blynk.begin(auth, ssid, pass);
 }
 
 void loop() {
-  Blynk.run();
-  timer.run();
+ displaySensorData();
+ Blynk.run();
 }

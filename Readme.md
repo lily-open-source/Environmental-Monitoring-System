@@ -1,7 +1,7 @@
 # Environmental Monitoring System
 
 ## Overview
-This project involves developing an IoT-based environmental monitoring system using the ESP32 microcontroller, SHT31 sensor, MQ-137 ammonia sensor, and a MAX485 module for RS-485 communication. The data collected from the sensors is displayed on an I2C LCD and can be sent to the Blynk app for remote monitoring. The system also calculates the heat index and categorizes it into different levels.
+This project involves developing an IoT-based environmental monitoring system using the ESP32 microcontroller, SHT20 sensor, and MQ-137 ammonia sensor. The data collected from the sensors is displayed on an I2C LCD and can be sent to the IoT broker for remote monitoring. The system also calculates the heat index and categorizes it into different levels.
 
 ## Table of Contents
 1. [Project Structure](#project-structure)
@@ -15,9 +15,10 @@ This project involves developing an IoT-based environmental monitoring system us
 
 ## Project Structure
 The project is structured as follows:
-- `main_offline.ino`: The main Arduino sketch for the offline version.
-- `main_adafruit.ino`: The main Arduino sketch with Adafruit IO integration.
-- `main_blynk.ino`: The main Arduino sketch with Blynk integration.
+- `offline.ino`: The main Arduino sketch for the offline version.
+- `arduino_iot.ino`: The main Arduino sketch with Arduino IoT integration.
+- `adafruit.ino`: The main Arduino sketch with Adafruit IO integration.
+- `blynk.ino`: The main Arduino sketch with Blynk integration.
 - `flowchart`: The flowchart illustrating the process flow of the project.
 
 ## Components

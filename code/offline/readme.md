@@ -99,4 +99,4 @@ You can add more sensors or modules by expanding the I2C bus and updating the co
 
 **figure:**
 
-![](code/offline/pic.png)
+![](https://raw.githubusercontent.com/lily-open-source/Environmental-Monitoring-System/main/code/offline/pic.png)

@@ -112,4 +112,4 @@ You can add more sensors or modules by expanding the I2C bus and updating the co
 
 **figure:**
 
-![](code/online/blynk/pic.png)
+![](https://raw.githubusercontent.com/lily-open-source/Environmental-Monitoring-System/main/code/online/blynk/pic.png)

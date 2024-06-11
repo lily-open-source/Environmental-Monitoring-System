@@ -1,99 +1,106 @@
-# IoT Environmental Monitoring System
+# Environmental Monitoring System with Blynk Integration
 
-## About
-
-This project is an IoT environmental monitoring system utilizing an ESP32, MQ-137 ammonia sensor, SHT31 temperature and humidity sensor, LCD display, and Blynk for data logging and remote monitoring. It reads temperature, humidity, and ammonia levels, calculates the heat index, categorizes it, displays the data on an LCD screen, and sends the data to the Blynk platform for remote monitoring and analysis.
+This project involves creating an environmental monitoring system using an SHT20 temperature and humidity sensor, an MQ-137 ammonia sensor, an LCD display, and Blynk for IoT integration.
 
 ## Structure
 
-The project structure includes:
+### Components
+- **SHT20 Sensor**: Measures temperature and humidity.
+- **MQ-137 Sensor**: Measures ammonia levels in the air.
+- **LiquidCrystal_I2C**: LCD display for showing sensor data.
+- **Blynk**: Connects the system to the Blynk IoT platform for data logging and remote monitoring.
 
-1. **Hardware Components**:
-   - ESP32 board
-   - MQ-137 ammonia sensor
-   - SHT31 temperature and humidity sensor
-   - LCD screen (20x4) with I2C interface
-   - WiFi module for internet connectivity
+### Libraries
+- `Wire.h`: For I2C communication.
+- `LiquidCrystal_I2C.h`: For interfacing with the LCD.
+- `SHT2x.h`: For reading data from the SHT20 sensor.
+- `BlynkSimpleEsp32.h`: For connecting to Blynk using an ESP32.
+- `WiFi.h`: For WiFi connectivity.
 
-2. **Libraries**:
-   - `Wire.h`: For I2C communication.
-   - `Adafruit_Sensor.h`: Base class for sensor libraries.
-   - `Adafruit_SHT31.h`: For interfacing with the SHT31 sensor.
-   - `LiquidCrystal_I2C.h`: For controlling the I2C LCD.
-   - `WiFi.h`: For WiFi connectivity.
-   - `BlynkSimpleEsp32.h`: For connecting to Blynk.
+### Flowchart of the Code
 
-3. **Code Files**:
-   - `main.ino`: Contains the setup and loop functions along with helper functions for reading sensors, calculating heat index, displaying data, and sending data to Blynk.
+```mermaid
+graph TD;
+    A[Start] --> B[Initialize components]
+    B --> C[Connect to Blynk]
+    C --> D[Check connection]
+    D -- Connected --> E[Read SHT20 sensor data]
+    D -- Not Connected --> F[Retry connection]
+    E --> G[Check read success]
+    G -- Success --> H[Read MQ-137 sensor data]
+    G -- Failure --> I[Display error message on LCD]
+    H --> J[Calculate heat index]
+    J --> K[Categorize heat index]
+    K --> L[Display data on LCD]
+    L --> M[Send data to Blynk]
+    M --> N[Delay 1 second]
+    N --> E
+```
 
 ## Explanation
 
 ### Initialization
-
-- **SHT31 Sensor**: Initialized with the I2C address `0x44`. The sensor reads temperature and humidity.
-- **LCD**: Initialized with the I2C address `0x27` for a 20x4 character display.
-- **MQ-137 Sensor**: Connected to analog pin `34`, it measures ammonia concentration in ppm (parts per million).
-- **WiFi and Blynk**: Configured with user credentials for WiFi and Blynk. Blynk authentication token and WiFi credentials are defined.
+1. **Serial Communication**: Initialize at 115200 baud rate.
+2. **I2C Communication**: Initialize using `Wire.begin()`.
+3. **SHT20 Sensor**: Initialize and check status.
+4. **LCD**: Initialize and turn on the backlight.
+5. **Blynk**: Connect to Blynk using provided credentials and WiFi details.
 
 ### Functions
-
-1. **readMQ137()**: Reads the analog value from the MQ-137 sensor and converts it to ppm.
-2. **calculateHeatIndex(float temperature, float humidity)**: Uses a simplified formula to calculate the heat index based on temperature and humidity.
-3. **categorizeHeatIndex(float hi)**: Categorizes the heat index into "Normal", "Ideal", "Tolerable", or "Extreme".
-4. **displaySensorData()**: Reads data from the sensors, calculates the heat index, displays all the information on the LCD, and sends the data to Blynk.
+- **readMQ137()**: Reads the analog value from the MQ-137 sensor and converts it to ppm.
+- **calculateHeatIndex(float temperature, float humidity)**: Converts temperature to Fahrenheit and calculates the heat index.
+- **categorizeHeatIndex(float hi)**: Categorizes the heat index into safety levels.
+- **displaySensorData()**: Reads sensor data, calculates heat index, displays all values on the LCD, and sends data to Blynk. Also prints data to the serial monitor.
+- **setup()**: Initializes all components and connects to Blynk.
+- **loop()**: Continuously reads and displays sensor data and sends data to Blynk at regular intervals.
 
 ### Main Program Flow
-
-- **setup()**: Initializes serial communication, the SHT31 sensor, and the LCD. Connects to WiFi and Blynk, and sets up the initial conditions.
-- **loop()**: Runs the Blynk and timer functions. The timer triggers the `displaySensorData()` function every second to read sensor data, update the LCD display, and send data to Blynk.
+1. **Setup**: Initializes serial communication, I2C, sensors, LCD, and Blynk.
+2. **Loop**: Reads and displays sensor data every second, and sends data to Blynk.
 
 ## Use Case
 
-This system can be deployed in various scenarios requiring environmental monitoring and remote data logging:
-- **Agriculture**: Monitor greenhouse conditions to ensure optimal growth environments and remotely log data for analysis.
-- **Industrial Safety**: Detect harmful ammonia levels to protect workers and provide remote alerts and data logging.
-- **Indoor Air Quality**: Monitor and improve indoor environments for health and comfort with remote monitoring capabilities.
+### Example 1
+Monitor the temperature, humidity, and ammonia levels in a laboratory, with remote data access via Blynk.
+
+### Example 2
+Use the system in a greenhouse to ensure optimal growing conditions and remotely monitor the data.
+
+### Example 3
+Install the system in a kitchen to monitor air quality and potential ammonia leaks, with IoT integration for alerts.
 
 ## Additional Information
 
 ### Calibration
-
-- **MQ-137 Calibration**: The conversion from analog value to ppm is simplified. For accurate results, calibrate the sensor according to the manufacturer's guidelines and adjust the conversion formula.
-
-### Heat Index Calculation
-
-- The heat index calculation is a simplified version. For precise applications, consider using more comprehensive formulas considering additional factors like wind speed and solar radiation.
+Calibrate the MQ-137 sensor for accurate ppm readings. The conversion formula in the code is a simplified version and may need adjustments based on your specific setup and calibration data.
 
 ### Error Handling
-
-- The system checks for failed reads from the SHT31 sensor and prints an error message to the serial monitor if the sensor read fails.
+If the SHT20 sensor fails to read, the system will display an error message on the LCD and print it to the serial monitor.
 
 ### Expansion
+You can add more sensors or modules by expanding the I2C bus and updating the code accordingly. Additionally, more data feeds can be added to Blynk.
 
-- **Additional Sensors**: Easily expandable to include more sensors (e.g., CO2, dust, other gas sensors).
-- **Data Logging and Alerts**: Integrate with more features on Blynk for detailed data logging, analysis, and alert notifications.
+### Requirements
 
-## Requirements
+#### Hardware
+- ESP32 board
+- SHT20 sensor
+- MQ-137 sensor
+- LCD display with I2C interface
+- WiFi module (if not built-in)
+- Connecting wires
 
-- **Software**: Arduino IDE with the following libraries installed:
-  - Adafruit SHT31 Library
-  - LiquidCrystal I2C Library
-  - Blynk Library
-  - WiFi Library
-- **Hardware**:
-  - ESP32 board
-  - MQ-137 sensor
-  - SHT31 sensor
-  - LCD display (20x4 with I2C interface)
-  - WiFi module
-  - Connecting wires and breadboard
+#### Software
+- Arduino IDE
+- Required libraries: `Wire.h`, `LiquidCrystal_I2C.h`, `SHT2x.h`, `BlynkSimpleEsp32.h`, `WiFi.h`
+- Blynk account and credentials
 
-## Installation
+### Installation
+1. **Connect the hardware components**: Follow the sensor and LCD pin configurations.
+2. **Install the Arduino libraries**: Add the required libraries to your Arduino IDE.
+3. **Configure Blynk**: Replace placeholder credentials with your Blynk template ID, authentication token, and WiFi details.
+4. **Upload the code**: Load the provided code onto your ESP32 board.
+5. **Monitor the output**: View the readings on the LCD and the serial monitor for debugging, and check data logs on Blynk.
 
-1. Connect the sensors and LCD to the ESP32 as per the pin configuration in the code.
-2. Install the required libraries via the Arduino Library Manager.
-3. Configure WiFi and Blynk credentials in the code.
-4. Upload the provided code to the ESP32 using the Arduino IDE.
-5. Open the serial monitor to debug and verify sensor readings and WiFi connection status.
-
-This README provides an overview of the project, helping users understand its functionality, setup, and potential applications. For further customization and optimization, refer to the sensor datasheets, library documentation, and Blynk resources.
+**figure:**
+![](../pic.png)

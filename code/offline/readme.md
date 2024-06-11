@@ -1,91 +1,93 @@
-# Sensor Data Display System
+# Environmental Monitoring System
 
-## About
-
-This project is a sensor data display system utilizing an Arduino, an MQ-137 ammonia sensor, an SHT31 temperature and humidity sensor, and an LCD screen. The system reads temperature, humidity, and ammonia levels, calculates the heat index, categorizes it, and displays the data on an LCD screen. It provides real-time environmental data monitoring, useful for applications in agriculture, industrial safety, and indoor air quality monitoring.
+This project involves creating an environmental monitoring system using an SHT20 temperature and humidity sensor, an MQ-137 ammonia sensor, and an LCD display to show the readings.
 
 ## Structure
 
-The project structure includes:
+### Components
+- **SHT20 Sensor**: Measures temperature and humidity.
+- **MQ-137 Sensor**: Measures ammonia levels in the air.
+- **LiquidCrystal_I2C**: LCD display for showing sensor data.
 
-1. **Hardware Components**:
-   - Arduino board
-   - MQ-137 ammonia sensor
-   - SHT2x temperature and humidity sensor
-   - LCD screen (20x4) with I2C interface
+### Libraries
+- `Wire.h`: For I2C communication.
+- `LiquidCrystal_I2C.h`: For interfacing with the LCD.
+- `SHT2x.h`: For reading data from the SHT20 sensor.
 
-2. **Libraries**:
-   - `Wire.h`: For I2C communication.
-   - `Adafruit_Sensor.h`: Base class for sensor libraries.
-   - `Adafruit_SHT31.h`: For interfacing with the SHT31 sensor.
-   - `LiquidCrystal_I2C.h`: For controlling the I2C LCD.
+### Flowchart of the Code
 
-3. **Code Files**:
-   - `main.ino`: Contains the setup and loop functions along with helper functions for reading sensors, calculating heat index, and displaying data.
+```mermaid
+graph TD;
+    A[Start] --> B[Initialize components]
+    B --> C[Read SHT20 sensor data]
+    C --> D[Check read success]
+    D -- Success --> E[Read MQ-137 sensor data]
+    D -- Failure --> F[Display error message on LCD]
+    E --> G[Calculate heat index]
+    G --> H[Categorize heat index]
+    H --> I[Display data on LCD]
+    I --> J[Delay 1 second]
+    J --> C
+```
 
 ## Explanation
 
 ### Initialization
-
-- **SHT31 Sensor**: Initialized with the I2C address `0x44`. The sensor reads temperature and humidity.
-- **LCD**: Initialized with the I2C address `0x27` for a 20x4 character display.
-- **MQ-137 Sensor**: Connected to analog pin `34`, it measures ammonia concentration in ppm (parts per million).
+1. **Serial Communication**: Initialize at 115200 baud rate.
+2. **I2C Communication**: Initialize using `Wire.begin()`.
+3. **SHT20 Sensor**: Initialize and check status.
+4. **LCD**: Initialize and turn on the backlight.
 
 ### Functions
-
-1. **readMQ137()**: Reads the analog value from the MQ-137 sensor and converts it to ppm.
-2. **calculateHeatIndex(float temperature, float humidity)**: Uses a simplified formula to calculate the heat index based on temperature and humidity.
-3. **categorizeHeatIndex(float hi)**: Categorizes the heat index into "Normal", "Ideal", "Tolerable", or "Extreme".
-4. **displaySensorData()**: Reads data from the sensors, calculates the heat index, and displays all the information on the LCD.
+- **readMQ137()**: Reads the analog value from the MQ-137 sensor and converts it to ppm.
+- **calculateHeatIndex(float temperature, float humidity)**: Converts temperature to Fahrenheit and calculates the heat index.
+- **categorizeHeatIndex(float hi)**: Categorizes the heat index into safety levels.
+- **displaySensorData()**: Reads sensor data, calculates heat index, and displays all values on the LCD.
 
 ### Main Program Flow
-
-- **setup()**: Initializes serial communication, the SHT31 sensor, and the LCD. Sets up the initial conditions.
-- **loop()**: Periodically (every second) reads sensor data and updates the LCD display.
+1. **Setup**: Initializes serial communication, I2C, sensors, and LCD.
+2. **Loop**: Reads and displays sensor data every second.
 
 ## Use Case
 
-This system can be deployed in various scenarios requiring environmental monitoring:
-- **Agriculture**: Monitor greenhouse conditions to ensure optimal growth environments.
-- **Industrial Safety**: Detect harmful ammonia levels to protect workers.
-- **Indoor Air Quality**: Monitor and improve indoor environments for health and comfort.
+### Example 1
+Monitor the temperature, humidity, and ammonia levels in a laboratory.
+
+### Example 2
+Use the system in a greenhouse to ensure optimal growing conditions.
+
+### Example 3
+Install the system in a kitchen to monitor air quality and potential ammonia leaks.
 
 ## Additional Information
 
 ### Calibration
-
-- **MQ-137 Calibration**: The conversion from analog value to ppm is simplified. For accurate results, calibrate the sensor according to the manufacturer's guidelines and adjust the conversion formula.
-
-### Heat Index Calculation
-
-- The heat index calculation is a simplified version. For precise applications, consider using more comprehensive formulas considering additional factors like wind speed and solar radiation.
+Calibrate the MQ-137 sensor for accurate ppm readings. The conversion formula in the code is a simplified version and may need adjustments based on your specific setup and calibration data.
 
 ### Error Handling
-
-- The system checks for failed reads from the SHT31 sensor and prints an error message to the serial monitor if the sensor read fails.
+If the SHT20 sensor fails to read, the system will display an error message on the LCD and print it to the serial monitor.
 
 ### Expansion
+You can add more sensors or modules by expanding the I2C bus and updating the code accordingly.
 
-- **Additional Sensors**: Easily expandable to include more sensors (e.g., CO2, dust, other gas sensors).
-- **Data Logging**: Integrate with SD card modules or IoT platforms for data logging and remote monitoring.
+### Requirements
 
-## Requirements
+#### Hardware
+- Arduino board
+- SHT20 sensor
+- MQ-137 sensor
+- LCD display with I2C interface
+- Connecting wires
 
-- **Software**: Arduino IDE with the following libraries installed:
-  - Adafruit SHT31 Library
-  - LiquidCrystal I2C Library
-- **Hardware**:
-  - Arduino board
-  - MQ-137 sensor
-  - SHT31 sensor
-  - LCD display (20x4 with I2C interface)
-  - Connecting wires and breadboard
+#### Software
+- Arduino IDE
+- Required libraries: `Wire.h`, `LiquidCrystal_I2C.h`, `SHT2x.h`
 
-## Installation
+### Installation
+1. **Connect the hardware components**: Follow the sensor and LCD pin configurations.
+2. **Install the Arduino libraries**: Add the required libraries to your Arduino IDE.
+3. **Upload the code**: Load the provided code onto your Arduino board.
+4. **Monitor the output**: View the readings on the LCD and the serial monitor for debugging.
 
-1. Connect the sensors and LCD to the Arduino as per the pin configuration in the code.
-2. Install the required libraries via the Arduino Library Manager.
-3. Upload the provided code to the Arduino using the Arduino IDE.
-4. Open the serial monitor to debug and verify sensor readings.
-
-This README provides an overview of the project, helping users understand its functionality, setup, and potential applications. For further customization and optimization, refer to the sensor datasheets and library documentation.
+**figure:**
+![](../pic.png)

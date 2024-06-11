@@ -1,99 +1,105 @@
-# IoT Environmental Monitoring System
+# Environmental Monitoring System with Adafruit Integration
 
-## About
-
-This project is an Internet of Things (IoT) environmental monitoring system using an Arduino, MQ-137 ammonia sensor, SHT31 temperature and humidity sensor, LCD display, and Adafruit IO for data logging and remote monitoring. It reads temperature, humidity, and ammonia levels, calculates the heat index, categorizes it, and displays the data on an LCD screen while also sending the data to Adafruit IO for remote monitoring and analysis.
+This project involves creating an environmental monitoring system using an SHT20 temperature and humidity sensor, an MQ-137 ammonia sensor, an LCD display, and Adafruit IO for IoT integration.
 
 ## Structure
 
-The project structure includes:
+### Components
+- **SHT20 Sensor**: Measures temperature and humidity.
+- **MQ-137 Sensor**: Measures ammonia levels in the air.
+- **LiquidCrystal_I2C**: LCD display for showing sensor data.
+- **AdafruitIO_WiFi**: Connects the system to Adafruit IO for data logging and monitoring.
 
-1. **Hardware Components**:
-   - Arduino board
-   - MQ-137 ammonia sensor
-   - SHT31 temperature and humidity sensor
-   - LCD screen (20x4) with I2C interface
-   - WiFi module for internet connectivity
+### Libraries
+- `Wire.h`: For I2C communication.
+- `LiquidCrystal_I2C.h`: For interfacing with the LCD.
+- `SHT2x.h`: For reading data from the SHT20 sensor.
+- `AdafruitIO_WiFi.h`: For connecting to Adafruit IO using WiFi.
 
-2. **Libraries**:
-   - `Wire.h`: For I2C communication.
-   - `Adafruit_Sensor.h`: Base class for sensor libraries.
-   - `Adafruit_SHT31.h`: For interfacing with the SHT31 sensor.
-   - `LiquidCrystal_I2C.h`: For controlling the I2C LCD.
-   - `WiFi.h`: For WiFi connectivity.
-   - `AdafruitIO_WiFi.h`: For connecting to Adafruit IO.
+### Flowchart of the Code
 
-3. **Code Files**:
-   - `main.ino`: Contains the setup and loop functions along with helper functions for reading sensors, calculating heat index, displaying data, and sending data to Adafruit IO.
+```mermaid
+graph TD;
+    A[Start] --> B[Initialize components]
+    B --> C[Connect to Adafruit IO]
+    C --> D[Check IO connection]
+    D -- Connected --> E[Read SHT20 sensor data]
+    D -- Not Connected --> F[Retry connection]
+    E --> G[Check read success]
+    G -- Success --> H[Read MQ-137 sensor data]
+    G -- Failure --> I[Display error message on LCD]
+    H --> J[Calculate heat index]
+    J --> K[Categorize heat index]
+    K --> L[Display data on LCD]
+    L --> M[Send data to Adafruit IO]
+    M --> N[Delay 1 second]
+    N --> E
+```
 
 ## Explanation
 
 ### Initialization
-
-- **SHT31 Sensor**: Initialized with the I2C address `0x44`. The sensor reads temperature and humidity.
-- **LCD**: Initialized with the I2C address `0x27` for a 20x4 character display.
-- **MQ-137 Sensor**: Connected to analog pin `34`, it measures ammonia concentration in ppm (parts per million).
-- **WiFi and Adafruit IO**: Configured with user credentials for WiFi and Adafruit IO. Four feeds are created to store temperature, humidity, ammonia, and heat index data.
+1. **Serial Communication**: Initialize at 115200 baud rate.
+2. **I2C Communication**: Initialize using `Wire.begin()`.
+3. **SHT20 Sensor**: Initialize and check status.
+4. **LCD**: Initialize and turn on the backlight.
+5. **Adafruit IO**: Connect to Adafruit IO using provided credentials and WiFi details.
 
 ### Functions
-
-1. **readMQ137()**: Reads the analog value from the MQ-137 sensor and converts it to ppm.
-2. **calculateHeatIndex(float temperature, float humidity)**: Uses a simplified formula to calculate the heat index based on temperature and humidity.
-3. **categorizeHeatIndex(float hi)**: Categorizes the heat index into "Normal", "Ideal", "Tolerable", or "Extreme".
-4. **displayAndSendSensorData()**: Reads data from the sensors, calculates the heat index, displays all the information on the LCD, and sends the data to Adafruit IO.
+- **readMQ137()**: Reads the analog value from the MQ-137 sensor and converts it to ppm.
+- **calculateHeatIndex(float temperature, float humidity)**: Converts temperature to Fahrenheit and calculates the heat index.
+- **categorizeHeatIndex(float hi)**: Categorizes the heat index into safety levels.
+- **displaySensorData()**: Reads sensor data, calculates heat index, and displays all values on the LCD. Also prints data to the serial monitor.
+- **setup()**: Initializes all components and connects to Adafruit IO.
+- **loop()**: Continuously reads and displays sensor data and sends data to Adafruit IO at regular intervals.
 
 ### Main Program Flow
-
-- **setup()**: Initializes serial communication, the SHT31 sensor, and the LCD. Connects to WiFi and Adafruit IO, and sets up the initial conditions.
-- **loop()**: Periodically (every second) reads sensor data, updates the LCD display, sends data to Adafruit IO, and keeps the connection alive with Adafruit IO.
+1. **Setup**: Initializes serial communication, I2C, sensors, LCD, and Adafruit IO.
+2. **Loop**: Reads and displays sensor data every second, and sends data to Adafruit IO every 30 seconds.
 
 ## Use Case
 
-This system can be deployed in various scenarios requiring environmental monitoring and remote data logging:
-- **Agriculture**: Monitor greenhouse conditions to ensure optimal growth environments and remotely log data for analysis.
-- **Industrial Safety**: Detect harmful ammonia levels to protect workers and provide remote alerts and data logging.
-- **Indoor Air Quality**: Monitor and improve indoor environments for health and comfort with remote monitoring capabilities.
+### Example 1
+Monitor the temperature, humidity, and ammonia levels in a laboratory, with remote data access via Adafruit IO.
+
+### Example 2
+Use the system in a greenhouse to ensure optimal growing conditions and remotely monitor the data.
+
+### Example 3
+Install the system in a kitchen to monitor air quality and potential ammonia leaks, with IoT integration for alerts.
 
 ## Additional Information
 
 ### Calibration
-
-- **MQ-137 Calibration**: The conversion from analog value to ppm is simplified. For accurate results, calibrate the sensor according to the manufacturer's guidelines and adjust the conversion formula.
-
-### Heat Index Calculation
-
-- The heat index calculation is a simplified version. For precise applications, consider using more comprehensive formulas considering additional factors like wind speed and solar radiation.
+Calibrate the MQ-137 sensor for accurate ppm readings. The conversion formula in the code is a simplified version and may need adjustments based on your specific setup and calibration data.
 
 ### Error Handling
-
-- The system checks for failed reads from the SHT31 sensor and prints an error message to the serial monitor if the sensor read fails.
+If the SHT20 sensor fails to read, the system will display an error message on the LCD and print it to the serial monitor.
 
 ### Expansion
+You can add more sensors or modules by expanding the I2C bus and updating the code accordingly. Additionally, more data feeds can be added to Adafruit IO.
 
-- **Additional Sensors**: Easily expandable to include more sensors (e.g., CO2, dust, other gas sensors).
-- **Data Logging and Alerts**: Integrate with more features on Adafruit IO for detailed data logging, analysis, and alert notifications.
+### Requirements
 
-## Requirements
+#### Hardware
+- Arduino board
+- SHT20 sensor
+- MQ-137 sensor
+- LCD display with I2C interface
+- WiFi module (if not built-in)
+- Connecting wires
 
-- **Software**: Arduino IDE with the following libraries installed:
-  - Adafruit SHT31 Library
-  - LiquidCrystal I2C Library
-  - Adafruit IO Arduino Library
-  - WiFi Library
-- **Hardware**:
-  - Arduino board
-  - MQ-137 sensor
-  - SHT31 sensor
-  - LCD display (20x4 with I2C interface)
-  - WiFi module
-  - Connecting wires and breadboard
+#### Software
+- Arduino IDE
+- Required libraries: `Wire.h`, `LiquidCrystal_I2C.h`, `SHT2x.h`, `AdafruitIO_WiFi.h`
+- Adafruit IO account and credentials
 
-## Installation
+### Installation
+1. **Connect the hardware components**: Follow the sensor and LCD pin configurations.
+2. **Install the Arduino libraries**: Add the required libraries to your Arduino IDE.
+3. **Configure Adafruit IO**: Replace placeholder credentials with your Adafruit IO username, key, and WiFi details.
+4. **Upload the code**: Load the provided code onto your Arduino board.
+5. **Monitor the output**: View the readings on the LCD and the serial monitor for debugging, and check data logs on Adafruit IO.
 
-1. Connect the sensors and LCD to the Arduino as per the pin configuration in the code.
-2. Install the required libraries via the Arduino Library Manager.
-3. Configure WiFi and Adafruit IO credentials in the code.
-4. Upload the provided code to the Arduino using the Arduino IDE.
-5. Open the serial monitor to debug and verify sensor readings and WiFi connection status.
-
-This README provides an overview of the project, helping users understand its functionality, setup, and potential applications. For further customization and optimization, refer to the sensor datasheets, library documentation, and Adafruit IO resources.
+**figure:**
+![](../pic.png)

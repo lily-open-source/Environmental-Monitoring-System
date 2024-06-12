@@ -23,10 +23,9 @@ The project is structured as follows:
 
 ## Components
 - **ESP32 Microcontroller**: The main controller for the project.
-- **SHT31 Sensor**: For measuring temperature and humidity.
+- **SHT20 Sensor**: For measuring temperature and humidity.
 - **MQ-137 Sensor**: For measuring ammonia concentration.
 - **I2C LCD (20x4)**: For displaying sensor data locally.
-- **Blynk App**: For remote monitoring of the sensor data.
 
 ## Code Structure
 The main code is divided into the following sections:
@@ -44,55 +43,55 @@ The main code is divided into the following sections:
    - Depending on the version, sends the data to Adafruit IO or Blynk, displays it on the LCD, and transmits it over the RS-485 network.
 
 ## Heat Index Calculation
-The heat index (H.I.) is calculated using the following formula:
-\[ \text{H.I.} = \left(1.8 \times \text{Temperature} \, ^\circ\text{C} + \text{RH%} + 32\right) \times 1.8 \]
-
+The heat index (H.I.) is calculated using the formula from [HERE.](https://www.weather.gov/ama/heatindex)
 The heat index is then categorized into different levels based on its value:
-- **Normal**: \(145 \leq \text{H.I.} \leq 149\)
-- **Ideal**: \(150 \leq \text{H.I.} \leq 155\)
-- **Tolerable**: \(156 \leq \text{H.I.} \leq 160\)
-- **Extreme**: \(\text{H.I.} > 160\)
+- **safe**
+- **caution**
+- **extreme caution**
+- **danger**
+- **extreme danger**
 
 ## Flowchart
 ```mermaid
-graph TD
-    A[Start] --> B[Initialize Sensors and Modules]
-    B --> C[Read Temperature and Humidity from SHT31]
-    C --> D[Read Ammonia Level from MQ-137]
-    D --> E[Calculate Heat Index]
-    E --> F[Categorize Heat Index]
-    F --> G[Send Data to Cloud iot provider for the online ver]
-    G --> H[Display Data on LCD]
-    H --> I[Wait for Next Interval]
-    I --> C
+graph TD;
+    A[Start] --> B[Initialize components]
+    B --> C[Connect to Adafruit IO]
+    C --> D[Check IO connection]
+    D -- Connected --> E[Read SHT20 sensor data]
+    D -- Not Connected --> F[Retry connection]
+    E --> G[Check read success]
+    G -- Success --> H[Read MQ-137 sensor data]
+    G -- Failure --> I[Display error message on LCD]
+    H --> J[Calculate heat index]
+    J --> K[Categorize heat index]
+    K --> L[Display data on LCD]
+    L --> M[Send data to broker for the online version]
+    M --> N[Delay 1 second]
+    N --> E
 ```
 
 ## Setup Instructions
 1. **Hardware Connections**:
-   - Connect the SHT31 sensor to the I2C pins of the ESP32.
+   - Connect the SHT20 sensor to the I2C pins of the ESP32.
    - Connect the MQ-137 sensor to an analog input pin of the ESP32.
-   - Connect the MAX485 module as follows:
-     - DE and RE pins to a GPIO pin (e.g., GPIO4).
-     - DI and RO pins to UART TX and RX pins (e.g., TX to GPIO17, RX to GPIO16).
-     - A and B pins to the RS-485 network lines.
    - Connect the I2C LCD to the I2C pins of the ESP32.
 
 2. **Software Setup**:
    - For the **offline version**:
-     - [readme](code/offline/readme.md)
+     - [readme](code/offline)
      - Open the `offline.ino` file in the Arduino IDE.
    - For the **Adafruit IO version**:
-     - [readme](code/online/adafruit/readme.md)
+     - [readme](code/online/adafruit)
      - Install the Adafruit IO and related libraries in the Arduino IDE.
      - Open the `adafruit.ino` file in the Arduino IDE.
      - Replace `"YOUR_AIO_KEY"` and other placeholders with your actual Adafruit IO key and credentials.
    - For the **Arduino IoT version**:
-     - [readme](code/online/arduino_iot/readme.md)
+     - [readme](code/online/arduino_iot)
      - Install the Blynk library in the Arduino IDE.
      - Open the `arduino_iot.ino` file in the Arduino IDE.
      - Replace `"your_SSID"`, `"your_PASSWORD"`, `"your_device_login_name"`, and `"your_device_key"` with your actual arduino iot cloud token (device name and key) and Wi-Fi credentials.
    - For the **Blynk version**:
-     - [readme](code/online/blynk/readme.md)
+     - [readme](code/online/blynk)
      - Install the Blynk library in the Arduino IDE.
      - Open the `blynk.ino` file in the Arduino IDE.
      - Replace `"YOUR_BLYNK_AUTH_TOKEN"`, `"YOUR_SSID"`, and `"YOUR_PASSWORD"` with your actual Blynk authentication token and Wi-Fi credentials.

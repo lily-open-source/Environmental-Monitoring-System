@@ -157,7 +157,7 @@ void displaySensorData() {
  lcd.setCursor(0, 3);
  lcd.print("HI  : ");
  lcd.print(heatIndex);
- lcd.print(" F ");
+ lcd.print(" C ");
  lcd.print(hiCategory);
 }
 
